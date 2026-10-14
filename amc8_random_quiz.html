@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AMC 8 Random Math Quiz</title>
+<style>
+:root{color-scheme:dark;--bg:#0b0d12;--panel:#151923;--panel2:#1d2330;--text:#f2f4f8;--muted:#a9b1c2;--accent:#75a7ff;--accent2:#a6c5ff;--correct:#55d6a1;--wrong:#ff7e87;--border:#30394a}
+*{box-sizing:border-box}body{margin:0;padding:24px 14px 48px;background:radial-gradient(ellipse at top,#17213a 0%,var(--bg) 55%);color:var(--text);font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+main{max-width:850px;margin:0 auto}header{margin:10px 0 24px}.eyebrow{color:var(--accent2);text-transform:uppercase;letter-spacing:.13em;font-size:.78rem;font-weight:800}
+h1{margin:7px 0 8px;font-size:clamp(1.8rem,5vw,2.7rem);line-height:1.12}.subtitle{color:var(--muted);margin:0}.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}.pill{border:1px solid var(--border);background:#111722;padding:5px 10px;border-radius:999px;color:#dbe5f7;font-size:.86rem}
+.progress-wrap{margin:22px 0}.progress-label{display:flex;justify-content:space-between;color:var(--muted);font-size:.9rem;margin-bottom:8px}.progress{height:8px;background:#252c3a;border-radius:999px;overflow:hidden}.progress>div{height:100%;width:0;background:var(--accent);transition:width .2s}
+.question{background:linear-gradient(145deg,rgba(24,30,43,.98),rgba(18,22,32,.98));border:1px solid var(--border);border-radius:17px;padding:clamp(17px,4vw,26px);margin:16px 0;box-shadow:0 12px 32px rgba(0,0,0,.16)}
+.q-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}.q-number{color:var(--accent2);font-weight:800;font-size:.9rem}.topic{color:#d7def0;background:#242d40;padding:3px 9px;border-radius:999px;font-size:.78rem}
+.prompt{font-size:1.07rem;font-weight:600;margin:0 0 16px}.choices{display:grid;gap:9px}.choice{display:flex;gap:11px;align-items:flex-start;padding:12px 13px;border:1px solid var(--border);background:#111620;border-radius:11px;cursor:pointer;transition:border-color .15s,background .15s}
+.choice:hover{border-color:#6e8fc7;background:#182132}.choice:has(input:checked){border-color:var(--accent);background:#1b2941}.choice input{margin-top:5px;accent-color:var(--accent)}.letter{color:var(--accent2);font-weight:800;min-width:21px}.choice-text{flex:1}
+.hint-button{margin-top:14px;border:0;background:transparent;color:var(--accent2);padding:5px 0;cursor:pointer;font:inherit;font-size:.92rem}.hint{display:none;margin-top:8px;padding:10px 12px;background:#101722;border-left:3px solid var(--accent);border-radius:5px;color:#cbd6e9;font-size:.94rem}.hint.visible{display:block}
+.feedback{display:none;margin-top:13px;padding:12px 13px;border-radius:9px;background:#101722;color:var(--muted);font-size:.94rem}.feedback.visible{display:block}.feedback.correct{border-left:3px solid var(--correct)}.feedback.incorrect{border-left:3px solid var(--wrong)}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin:24px 0}button.action{border:1px solid var(--border);border-radius:10px;padding:12px 17px;font:inherit;font-weight:750;cursor:pointer;color:var(--text);background:var(--panel2)}button.primary{background:var(--accent);color:#07111f;border-color:var(--accent)}button.action:hover{filter:brightness(1.08)}button:disabled{opacity:.45;cursor:not-allowed}
+#results{display:none;padding:24px;margin-top:22px;border:1px solid var(--border);border-radius:17px;background:var(--panel)}#results h2{margin-top:0}.score{font-size:2.5rem;font-weight:850;color:var(--accent2)}.result-note{color:var(--muted)}footer{color:var(--muted);text-align:center;font-size:.85rem;margin-top:30px}
+@media(min-width:700px){.choices{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<main>
+<header>
+<div class="eyebrow">Math Challenge</div><h1>AMC 8 Random Math Quiz</h1>
+<p class="subtitle">A fresh set of 10 intermediate questions from word problems, geometry, counting and probability, combinatorics, and number theory.</p>
+<div class="meta"><span class="pill">10 questions</span><span class="pill">Intermediate</span><span class="pill">Suggested time: 25 minutes</span><span class="pill">No calculator needed</span></div>
+</header>
+<div class="progress-wrap"><div class="progress-label"><span id="answered-count">0 of 10 answered</span><span id="progress-percent">0%</span></div><div class="progress"><div id="progress-bar"></div></div></div>
+<form id="quiz-form"><div id="question-list"></div>
+<div class="actions"><button class="action primary" id="submit-btn" type="submit">Submit quiz</button><button class="action" id="new-btn" type="button">Generate new questions</button></div>
+</form>
+<section id="results" aria-live="polite"><h2>Your results</h2><div class="score" id="score"></div><p id="result-message"></p><p class="result-note">Correct answers and explanations are shown under each question.</p><button class="action primary" id="review-btn" type="button">Review answers</button></section>
+<footer>AMC 8–style practice · Questions and answer choices are randomized each round</footer>
+</main>
+<script>
+const BANK = [
+{topic:"Word Problem",q:"A bookstore sells notebooks for $4 each and pens for $2 each. Maya buys 11 items and spends $32. How many notebooks does she buy?",choices:["4","5","6","7"],a:1,hint:"Let n be the number of notebooks. The number of pens is 11 − n, and the total cost is $32.",explain:"Five notebooks and six pens cost $20 + $12 = $32, with 11 items total."},
+{topic:"Geometry",q:"A rectangle has perimeter 34 cm. Its length is 3 cm greater than its width. What is its area?",choices:["60 cm²","63 cm²","70 cm²","72 cm²"],a:2,hint:"Half the perimeter is the sum of the length and width. Use the 3 cm difference to find both dimensions.",explain:"Let the width be w and the length be w + 3. Since 2(w + w + 3) = 34, w = 7 and the length is 10. The area is 70 cm²."},
+{topic:"Counting & Probability",q:"A bag contains 5 red, 3 blue, and 2 green marbles. One marble is drawn at random. What is the probability that it is NOT blue?",choices:["3/10","1/2","7/10","4/5"],a:2,hint:"Count all the marbles that satisfy the condition, then divide by the total number of marbles.",explain:"There are 5 red and 2 green marbles, so 7 of the 10 marbles are not blue. The probability is 7/10."},
+{topic:"Combinatorics",q:"A club has 6 students. In how many different ways can it choose a president and a vice president if no student can hold both positions?",choices:["15","30","36","12"],a:1,hint:"Choose the president first. Then count how many students remain eligible to be vice president.",explain:"There are 6 choices for president and then 5 remaining choices for vice president, giving 6 × 5 = 30 ways."},
+{topic:"Number Theory",q:"What is the least positive integer that is divisible by 6, 8, and 15?",choices:["60","90","120","240"],a:2,hint:"Find the least common multiple by comparing the prime factorizations of the three numbers.",explain:"The least common multiple of 6, 8, and 15 is 2³ × 3 × 5 = 120."},
+{topic:"Word Problem",q:"A cyclist rides at 12 miles per hour for 30 minutes and then at 8 miles per hour for 45 minutes. What is the cyclist's average speed for the entire trip?",choices:["9.6 mph","10 mph","10.5 mph","11 mph"],a:0,hint:"Average speed is total distance divided by total time, not necessarily the average of the two speeds.",explain:"The cyclist travels 6 miles and then 6 miles. Total distance is 12 miles in 1.25 hours, so average speed is 12 ÷ 1.25 = 9.6 mph."},
+{topic:"Geometry",q:"A square has side length 10 cm. A smaller square has side length 6 cm. What is the area of the region inside the larger square but outside the smaller square?",choices:["16 cm²","36 cm²","64 cm²","100 cm²"],a:2,hint:"Find each square's area separately, then subtract the smaller area from the larger area.",explain:"The larger square has area 10² = 100 cm² and the smaller has area 6² = 36 cm². The difference is 100 − 36 = 64 cm²."},
+{topic:"Counting & Probability",q:"Two fair six-sided dice are rolled. What is the probability that their sum is 9?",choices:["1/6","1/9","1/12","1/8"],a:1,hint:"List the ordered pairs that add to 9. Rolling a 3 then a 6 differs from rolling a 6 then a 3.",explain:"The ordered pairs are (3,6), (4,5), (5,4), and (6,3). There are 4 successful outcomes among 36, so 4/36 = 1/9."},
+{topic:"Number Theory",q:"A positive integer n leaves a remainder of 2 when divided by 5 and a remainder of 1 when divided by 3. What is the smallest possible value of n?",choices:["7","11","12","17"],a:0,hint:"List numbers of the form 5k + 2 in increasing order, then test which one leaves remainder 1 when divided by 3.",explain:"7 = 5 × 1 + 2 and 7 = 3 × 2 + 1, so it satisfies both conditions and is the smallest such positive integer."},
+{topic:"Combinatorics",q:"How many different three-digit numbers can be formed using the digits 1, 2, 3, and 4 if no digit may be repeated?",choices:["12","18","24","64"],a:2,hint:"Count the choices for each position in order. Each time you use a digit, one fewer digit remains available.",explain:"There are 4 choices for the hundreds digit, 3 for the tens digit, and 2 for the ones digit. Thus 4 × 3 × 2 = 24 numbers."},
+{topic:"Word Problem",q:"A recipe uses 3 cups of flour for every 2 cups of sugar. If a baker uses 12 cups of flour, how many cups of sugar are needed to keep the ratio?",choices:["6","8","9","18"],a:1,hint:"Find the scale factor from 3 cups of flour to 12 cups, then apply it to the sugar amount.",explain:"12 cups is 4 times 3 cups, so sugar must also be multiplied by 4: 2 × 4 = 8 cups."},
+{topic:"Geometry",q:"A triangle has angles measuring 2x°, 3x°, and 4x°. What is the measure of its largest angle?",choices:["40°","60°","80°","90°"],a:2,hint:"The interior angles of a triangle add up to 180°.",explain:"2x + 3x + 4x = 180, so x = 20. The largest angle is 4x = 80°."},
+{topic:"Number Theory",q:"What is the greatest common divisor of 48 and 72?",choices:["8","12","18","24"],a:3,hint:"Prime-factorize both numbers or list their common factors.",explain:"48 = 2⁴ × 3 and 72 = 2³ × 3². Their greatest common divisor is 2³ × 3 = 24."},
+{topic:"Counting & Probability",q:"A fair coin is flipped 3 times. What is the probability of getting exactly 2 heads?",choices:["1/8","3/8","1/2","5/8"],a:1,hint:"There are 2³ equally likely sequences. Count the sequences with exactly two heads.",explain:"The successful sequences are HHT, HTH, and THH: 3 outcomes out of 8, so the probability is 3/8."},
+{topic:"Combinatorics",q:"How many two-digit numbers can be made from the digits 2, 5, 7, and 9 if digits cannot repeat?",choices:["8","10","12","16"],a:2,hint:"Choose a tens digit, then choose a different ones digit.",explain:"There are 4 choices for the tens digit and 3 remaining choices for the ones digit, giving 4 × 3 = 12."},
+{topic:"Word Problem",q:"A water tank is 3/5 full. After 12 liters are added, it is 4/5 full. What is the tank's total capacity?",choices:["30 liters","48 liters","60 liters","72 liters"],a:2,hint:"The 12 liters represent the difference between 3/5 and 4/5 of the tank.",explain:"One-fifth of the tank is 12 liters, so the full capacity is 5 × 12 = 60 liters."},
+{topic:"Geometry",q:"A rectangle is 8 cm long and 5 cm wide. If both dimensions are doubled, by what factor does its area increase?",choices:["2","3","4","8"],a:2,hint:"Compare the original area with the area using the doubled dimensions.",explain:"The original area is 8 × 5 = 40. The new area is 16 × 10 = 160, which is 4 times as large."},
+{topic:"Number Theory",q:"Which of these numbers is prime?",choices:["51","57","61","69"],a:2,hint:"Check divisibility by small primes, especially 2, 3, 5, and 7.",explain:"61 is not divisible by 2, 3, 5, or 7. Since √61 is less than 8, that confirms 61 is prime."},
+{topic:"Counting & Probability",q:"A box contains 4 white socks and 6 black socks. If one sock is chosen at random, what is the probability it is white?",choices:["1/5","2/5","1/2","3/5"],a:1,hint:"The probability is the number of white socks divided by the total number of socks.",explain:"There are 4 white socks out of 10 total, so 4/10 simplifies to 2/5."},
+{topic:"Combinatorics",q:"In how many ways can 4 different books be arranged in a row?",choices:["12","16","20","24"],a:3,hint:"There are 4 choices for the first position, then 3, then 2, then 1.",explain:"The number of arrangements is 4 × 3 × 2 × 1 = 24."},
+{topic:"Number Theory",q:"What is the smallest positive multiple of 7 that is greater than 50?",choices:["49","54","56","63"],a:2,hint:"List multiples of 7 around 50.",explain:"7 × 7 = 49 is too small; the next multiple is 7 × 8 = 56."},
+{topic:"Word Problem",q:"A class has 24 students. Three-eighths of them take the bus. How many students do not take the bus?",choices:["9","12","15","18"],a:2,hint:"First find three-eighths of 24, then subtract that number from 24.",explain:"Three-eighths of 24 is 9, so 24 − 9 = 15 students do not take the bus."},
+{topic:"Geometry",q:"The perimeter of a square is 48 cm. What is its area?",choices:["64 cm²","100 cm²","144 cm²","192 cm²"],a:2,hint:"Divide the perimeter by 4 to get the side length, then square it.",explain:"Each side is 48 ÷ 4 = 12 cm. The area is 12² = 144 cm²."},
+{topic:"Combinatorics",q:"A password consists of one letter chosen from A, B, C and one digit chosen from 1, 2, 3, 4. How many passwords are possible?",choices:["7","9","12","16"],a:2,hint:"For every letter choice, count the possible digit choices.",explain:"There are 3 letter choices and 4 digit choices, so 3 × 4 = 12 passwords."}
+];
+
+const form=document.getElementById('quiz-form'), list=document.getElementById('question-list');
+const results=document.getElementById('results'); let current=[], submitted=false;
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function escapeHTML(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function makeRound(){
+ submitted=false;results.style.display='none';document.getElementById('submit-btn').disabled=false;
+ // Shuffle questions, take 10, then shuffle the options independently while keeping the correct answer.
+ current=shuffle(BANK).slice(0,10).map(item=>{
+   const options=shuffle(item.choices.map((text,index)=>({text,correct:index===item.a})));
+   return {...item, options, answer:options.findIndex(o=>o.correct)};
+ });
+ list.innerHTML=current.map((item,i)=>`
+ <section class="question" data-index="${i}">
+  <div class="q-top"><span class="q-number">QUESTION ${i+1}</span><span class="topic">${escapeHTML(item.topic)}</span></div>
+  <p class="prompt">${escapeHTML(item.q)}</p>
+  <div class="choices">${item.options.map((o,j)=>`<label class="choice"><input type="radio" name="q${i}" value="${j}"><span class="letter">${String.fromCharCode(65+j)}.</span><span class="choice-text">${escapeHTML(o.text)}</span></label>`).join('')}</div>
+  <button class="hint-button" type="button">Show hint</button><div class="hint">${escapeHTML(item.hint)}</div><div class="feedback"></div>
+ </section>`).join('');
+ list.querySelectorAll('.hint-button').forEach(button=>button.addEventListener('click',()=>{
+   const hint=button.nextElementSibling,show=hint.classList.toggle('visible');button.textContent=show?'Hide hint':'Show hint';
+ }));
+ updateProgress();
+ window.scrollTo({top:0,behavior:'smooth'});
+}
+function updateProgress(){
+ const qs=[...list.querySelectorAll('.question')],answered=qs.filter(q=>q.querySelector('input:checked')).length;
+ document.getElementById('answered-count').textContent=`${answered} of ${qs.length} answered`;
+ const pct=Math.round(answered/qs.length*100);document.getElementById('progress-percent').textContent=`${pct}%`;document.getElementById('progress-bar').style.width=`${pct}%`;
+}
+form.addEventListener('change',e=>{if(e.target.matches('input[type=radio]')&&!submitted)updateProgress();});
+form.addEventListener('submit',e=>{
+ e.preventDefault();if(submitted)return;
+ const qs=[...list.querySelectorAll('.question')],unanswered=qs.filter(q=>!q.querySelector('input:checked'));
+ if(unanswered.length&&!confirm(`You have ${unanswered.length} unanswered question(s). Submit anyway?`)){unanswered[0].scrollIntoView({behavior:'smooth',block:'center'});return;}
+ let score=0;
+ qs.forEach((q,i)=>{
+  const item=current[i],selected=q.querySelector('input:checked'),fb=q.querySelector('.feedback');
+  q.querySelectorAll('input').forEach(input=>{input.disabled=true;const label=input.closest('.choice');if(Number(input.value)===item.answer)label.style.borderColor='var(--correct)';if(selected===input&&Number(input.value)!==item.answer)label.style.borderColor='var(--wrong)';});
+  fb.classList.add('visible');
+  if(selected&&Number(selected.value)===item.answer){score++;fb.classList.add('correct');fb.innerHTML=`<strong style="color:var(--correct)">Correct.</strong> ${escapeHTML(item.explain)}`;}
+  else{fb.classList.add('incorrect');fb.innerHTML=`<strong style="color:var(--wrong)">${selected?'Not quite.':'Unanswered.'}</strong> Correct answer: ${String.fromCharCode(65+item.answer)}. ${escapeHTML(item.explain)}`;}
+ });
+ submitted=true;document.getElementById('score').textContent=`${score} / ${qs.length}`;
+ document.getElementById('result-message').textContent=score===10?'Excellent work! You got every question right.':score>=8?'Great job! You have a strong grasp of these topics.':score>=6?'Good effort! Review the explanations to sharpen your skills.':'Keep practicing. Review the solutions, then generate a fresh quiz.';
+ results.style.display='block';document.getElementById('submit-btn').disabled=true;results.scrollIntoView({behavior:'smooth',block:'start'});
+});
+document.getElementById('new-btn').addEventListener('click',makeRound);
+document.getElementById('review-btn').addEventListener('click',()=>list.querySelector('.question')?.scrollIntoView({behavior:'smooth',block:'start'}));
+makeRound();
+</script>
+</body>
+</html>
