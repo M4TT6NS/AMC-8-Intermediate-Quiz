@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AMC 8 Intermediate Math Quiz</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0b0d12;
+    --panel: #151923;
+    --panel2: #1d2330;
+    --text: #f2f4f8;
+    --muted: #a9b1c2;
+    --accent: #75a7ff;
+    --accent2: #a6c5ff;
+    --correct: #55d6a1;
+    --wrong: #ff7e87;
+    --border: #30394a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 24px 14px 48px;
+    background: radial-gradient(ellipse at top, #17213a 0%, var(--bg) 55%);
+    color: var(--text);
+    font: 16px/1.55 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  }
+  main { max-width: 850px; margin: 0 auto; }
+  header { margin: 10px 0 24px; }
+  .eyebrow { color: var(--accent2); text-transform: uppercase; letter-spacing: .13em; font-size: .78rem; font-weight: 800; }
+  h1 { margin: 7px 0 8px; font-size: clamp(1.8rem, 5vw, 2.7rem); line-height: 1.12; }
+  .subtitle { color: var(--muted); margin: 0; }
+  .meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+  .pill { border: 1px solid var(--border); background: #111722; padding: 5px 10px; border-radius: 999px; color: #dbe5f7; font-size: .86rem; }
+  .progress-wrap { margin: 22px 0; }
+  .progress-label { display:flex; justify-content:space-between; color:var(--muted); font-size:.9rem; margin-bottom:8px; }
+  .progress { height: 8px; background: #252c3a; border-radius: 999px; overflow:hidden; }
+  .progress > div { height:100%; width:0; background:var(--accent); transition:width .2s ease; }
+  .question {
+    background: linear-gradient(145deg, rgba(24,30,43,.98), rgba(18,22,32,.98));
+    border: 1px solid var(--border); border-radius: 17px;
+    padding: clamp(17px, 4vw, 26px); margin: 16px 0;
+    box-shadow: 0 12px 32px rgba(0,0,0,.16);
+  }
+  .q-top { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
+  .q-number { color:var(--accent2); font-weight:800; font-size:.9rem; }
+  .topic { color:#d7def0; background:#242d40; padding:3px 9px; border-radius:999px; font-size:.78rem; }
+  .prompt { font-size:1.07rem; font-weight:600; margin:0 0 16px; }
+  .choices { display:grid; gap:9px; }
+  .choice {
+    display:flex; gap:11px; align-items:flex-start; padding:12px 13px;
+    border:1px solid var(--border); background:#111620; border-radius:11px;
+    cursor:pointer; transition:border-color .15s, background .15s;
+  }
+  .choice:hover { border-color:#6e8fc7; background:#182132; }
+  .choice:has(input:checked) { border-color:var(--accent); background:#1b2941; }
+  .choice input { margin-top:5px; accent-color:var(--accent); }
+  .letter { color:var(--accent2); font-weight:800; min-width:21px; }
+  .choice-text { flex:1; }
+  .hint-button { margin-top:14px; border:0; background:transparent; color:var(--accent2); padding:5px 0; cursor:pointer; font:inherit; font-size:.92rem; }
+  .hint { display:none; margin-top:8px; padding:10px 12px; background:#101722; border-left:3px solid var(--accent); border-radius:5px; color:#cbd6e9; font-size:.94rem; }
+  .hint.visible { display:block; }
+  .feedback { display:none; margin-top:13px; padding:12px 13px; border-radius:9px; background:#101722; color:var(--muted); font-size:.94rem; }
+  .feedback.visible { display:block; }
+  .feedback.correct { border-left:3px solid var(--correct); }
+  .feedback.incorrect { border-left:3px solid var(--wrong); }
+  .actions { display:flex; flex-wrap:wrap; gap:10px; margin:24px 0; }
+  button.action {
+    border:1px solid var(--border); border-radius:10px; padding:12px 17px;
+    font:inherit; font-weight:750; cursor:pointer; color:var(--text); background:var(--panel2);
+  }
+  button.primary { background:var(--accent); color:#07111f; border-color:var(--accent); }
+  button.action:hover { filter:brightness(1.08); }
+  button:disabled { opacity:.45; cursor:not-allowed; }
+  #results { display:none; padding:24px; margin-top:22px; border:1px solid var(--border); border-radius:17px; background:var(--panel); }
+  #results h2 { margin-top:0; }
+  .score { font-size:2.5rem; font-weight:850; color:var(--accent2); }
+  .result-note { color:var(--muted); }
+  footer { color:var(--muted); text-align:center; font-size:.85rem; margin-top:30px; }
+  @media (min-width:700px) { .choices { grid-template-columns:1fr 1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="eyebrow">Math Challenge</div>
+    <h1>AMC 8 Intermediate Quiz</h1>
+    <p class="subtitle">10 questions across word problems, geometry, probability, combinatorics, and number theory.</p>
+    <div class="meta">
+      <span class="pill">10 questions</span><span class="pill">Intermediate</span>
+      <span class="pill">Suggested time: 25 minutes</span><span class="pill">No calculator needed</span>
+    </div>
+  </header>
+
+  <div class="progress-wrap">
+    <div class="progress-label"><span id="answered-count">0 of 10 answered</span><span id="progress-percent">0%</span></div>
+    <div class="progress"><div id="progress-bar"></div></div>
+  </div>
+
+  <form id="quiz-form">
+    <section class="question" data-answer="B" data-explanation="Five notebooks and six pens cost $20 + $12 = $32, with 11 items total.">
+      <div class="q-top"><span class="q-number">QUESTION 1</span><span class="topic">Word Problem</span></div>
+      <p class="prompt">A bookstore sells notebooks for $4 each and pens for $2 each. Maya buys 11 items and spends $32. How many notebooks does she buy?</p>
+      <div class="choices">
+        <label class="choice"><input type="radio" name="q1" value="A"><span class="letter">A.</span><span class="choice-text">4</span></label>
+        <label class="choice"><input type="radio" name="q1" value="B"><span class="letter">B.</span><span class="choice-text">5</span></label>
+        <label class="choice"><input type="radio" name="q1" value="C"><span class="letter">C.</span><span class="choice-text">6</span></label>
+        <label class="choice"><input type="radio" name="q1" value="D"><span class="letter">D.</span><span class="choice-text">7</span></label>
+      </div>
+      <button class="hint-button" type="button">Show hint</button><div class="hint">Let n be the number of notebooks. The number of pens is 11 − n, and the total cost is $32.</div>
+      <div class="feedback"></div>
+    </section>
+
+    <section class="question" data-answer="C" data-explanation="Let the width be w and the length be w + 3. Since 2(w + w + 3) = 34, w = 7 and the length is 10. The area is 70 cm².">
+      <div class="q-top"><span class="q-number">QUESTION 2</span><span class="topic">Geometry</span></div>
+      <p class="prompt">A rectangle has perimeter 34 cm. Its length is 3 cm greater than its width. What is its area?</p>
+      <div class="choices">
+        <label class="choice"><input type="radio" name="q2" value="A"><span class="letter">A.</span><span class="choice-text">60 cm²</span></label>
+        <label class="choice"><input type="radio" name="q2" value="B"><span class="letter">B.</span><span class="choice-text">63 cm²</span></label>
+        <label class="choice"><input type="radio" name="q2" value="C"><span class="letter">C.</span><span class="choice-text">70 cm²</span></label>
+        <label class="choice"><input type="radio" name="q2" value="D"><span class="letter">D.</span><span class="choice-text">72 cm²</span></label>
+      </div>
+      <button class="hint-button" type="button">Show hint</button><div class="hint">Half the perimeter is the sum of the length and width. Use the 3 cm difference to find both dimensions.</div>
+      <div class="feedback"></div>
+    </section>
+
+    <section class="question" data-answer="C" data-explanation="There are 5 red and 2 green marbles, so 7 of the 10 marbles are not blue. The probability is 7/10.">
+      <div class="q-top"><span class="q-number">QUESTION 3</span><span class="topic">Probability</span></div>
+      <p class="prompt">A bag contains 5 red, 3 blue, and 2 green marbles. One marble is drawn at random. What is the probability that it is NOT blue?</p>
+      <div class="choices">
+        <label class="choice"><input type="radio" name="q3" value="A"><span class="letter">A.</span><span class="choice-text">3/10</span></label>
+        <label class="choice"><input type="radio" name="q3" value="B"><span class="letter">B.</span><span class="choice-text">1/2</span></label>
+        <label class="choice"><input type="radio" name="q3" value="C"><span class="letter">C.</span><span class="choice-text">7/10</span></label>
+        <label class="choice"><input type="radio" name="q3" value="D"><span class="letter">D.</span><span class="choice-text">4/5</span></label>
+      </div>
+      <button class="hint-button" type="button">Show hint</button><div class="hint">Count all the marbles that satisfy the condition, then divide by the total number of marbles.</div>
+      <div class="feedback"></div>
+    </section>
+
+    <section class="question" data-answer="B" data-explanation="There are 6 choices for president and then 5 remaining choices for vice president, giving 6 × 5 = 30 ways.">
+      <div class="q-top"><span class="q-number">QUESTION 4</span><span class="topic">Combinatorics</span></div>
+      <p class="prompt">A club has 6 students. In how many different ways can it choose a president and a vice president if no student can hold both positions?</p>
+      <div class="choices">
+        <label class="choice"><input type="radio" name="q4" value="A"><span class="letter">A.</span><span class="choice-text">15</span></label>
+        <label class="choice"><input type="radio" name="q4" value="B"><span class="letter">B.</span><span class="choice-text">30</span></label>
+        <label class="choice"><input type="radio" name="q4" value="C"><span class="letter">C.</span><span class="choice-text">36</span></label>
+        <label class="choice"><input type="radio" name="q4" value="D"><span class="letter">D.</span><span class="choice-text">12</span></label>
+      </div>
+      <button class="hint-button" type="button">Show hint</button><div class="hint">Choose the president first. Then count how many students remain eligible to be vice president.</div>
+      <div class="feedback"></div>
+    </section>
+
+    <section class="question" data-answer="C" data-explanation="The least common multiple of 6, 8, and 15 is 2³ × 3 × 5 = 120.">
+      <div class="q-top"><span class="q-number">QUESTION 5</span><span class="topic">Number Theory</span></div>
+      <p class="prompt">What is the least positive integer that is divisible by 6, 8, and 15?</p>
+      <div class="choices">
+        <label class="choice"><input type="radio" name="q5" value="A"><span class="letter">A.</span><span class="choice-text">60</span></label>
+        <label class="choice"><input type="radio" name="q5" value="B"><span class="letter">B.</span><span class="choice-text">90</span></label>
+        <label class="choice"><input type="radio" name="q5" value="C"><span class="letter">C.</span><span class="choice-text">120</span></label>
+        <label class="choice"><input type="radio" name="q5" value="D"><span class="letter">D.</span><span class="choice-text">240</span></label>
+      </div>
+      <button class="hint-button" type="button">Show hint</button><div class="hint">Find the least common multiple by comparing the prime factorizations of the three numbers.</div>
+      <div class="feedback"></div>
+    </section>
+
+    <section class="question" data-answer="A" data-explanation="The cyclist travels 12 × 0.5 = 6 miles and 8 × 0.75 = 6 miles. Total distance is 12 miles in 1.25 hours, so average speed is 12 ÷ 1.25 = 9.6 mph.">
+      <div class="q-top"><span class="q-number">QUESTION 6</span><span class="topic">Word Problem</span></div>
+      <p class="prompt">A cyclist rides at 12 miles per hour for 30 minutes and then at 8 miles per hour for 45 minutes. What is the cyclist's average speed for the entire trip?</p>
+      <div class="choices">
+        <label class="choice"><input type="radio" name="q6" value="A"><span class="letter">A.</span><span class="choice-text">9.6 mph</span></label>
+        <label class="choice"><input type="radio" name="q6" value="B"><span class="letter">B.</span><span class="choice-text">10 mph</span></label>
+        <label class="choice"><input type="radio" name="q6" value="C"><span class="letter">C.</span><span class="choice-text">10.5 mph</span></label>
+        <label class="choice"><input type="radio" name="q6" value="D"><span class="letter">D.</span><span class="choice-text">11 mph</span></label>
+      </div>
+      <button class="hint-button" type="button">Show hint</button><div class="hint">Average speed is total distance divided by total time, not necessarily the average of the two speeds.</div>
+      <div class="feedback"></div>
+    </section>
+
+    <section class="question" data-answer="C" data-explanation="The larger square has area 10² = 100 cm² and the smaller has area 6² = 36 cm². The difference is 100 − 36 = 64 cm².">
+      <div class="q-top"><span class="q-number">QUESTION 7</span><span class="topic">Geometry</span></div>
+      <p class="prompt">A square has side length 10 cm. A smaller square has side length 6 cm. What is the area of the region inside the larger square but outside the smaller square?</p>
+      <div class="choices">
+        <label class="choice"><input type="radio" name="q7" value="A"><span class="letter">A.</span><span class="choice-text">16 cm²</span></label>
+        <label class="choice"><input type="radio" name="q7" value="B"><span class="letter">B.</span><span class="choice-text">36 cm²</span></label>
+        <label class="choice"><input type="radio" name="q7" value="C"><span class="letter">C.</span><span class="choice-text">64 cm²</span></label>
+        <label class="choice"><input type="radio" name="q7" value="D"><span class="letter">D.</span><span class="choice-text">100 cm²</span></label>
+      </div>
+      <button class="hint-button" type="button">Show hint</button><div class="hint">Find each square's area separately, then subtract the smaller area from the larger area.</div>
+      <div class="feedback"></div>
+    </section>
+
+    <section class="question" data-answer="B" data-explanation="The ordered pairs that sum to 9 are (3,6), (4,5), (5,4), and (6,3). There are 4 successful outcomes among 36 equally likely outcomes, so 4/36 = 1/9.">
+      <div class="q-top"><span class="q-number">QUESTION 8</span><span class="topic">Counting &amp; Probability</span></div>
+      <p class="prompt">Two fair six-sided dice are rolled. What is the probability that their sum is 9?</p>
+      <div class="choices">
+        <label class="choice"><input type="radio" name="q8" value="A"><span class="letter">A.</span><span class="choice-text">1/6</span></label>
+        <label class="choice"><input type="radio" name="q8" value="B"><span class="letter">B.</span><span class="choice-text">1/9</span></label>
+        <label class="choice"><input type="radio" name="q8" value="C"><span class="letter">C.</span><span class="choice-text">1/12</span></label>
+        <label class="choice"><input type="radio" name="q8" value="D"><span class="letter">D.</span><span class="choice-text">1/8</span></label>
+      </div>
+      <button class="hint-button" type="button">Show hint</button><div class="hint">List the ordered pairs that add to 9. Rolling a 3 then a 6 differs from rolling a 6 then a 3.</div>
+      <div class="feedback"></div>
+    </section>
+
+    <section class="question" data-answer="A" data-explanation="7 = 5 × 1 + 2, so it leaves remainder 2 when divided by 5; and 7 = 3 × 2 + 1, so it leaves remainder 1 when divided by 3. It is the smallest such positive integer.">
+      <div class="q-top"><span class="q-number">QUESTION 9</span><span class="topic">Number Theory</span></div>
+      <p class="prompt">A positive integer n leaves a remainder of 2 when divided by 5 and a remainder of 1 when divided by 3. What is the smallest possible value of n?</p>
+      <div class="choices">
+        <label class="choice"><input type="radio" name="q9" value="A"><span class="letter">A.</span><span class="choice-text">7</span></label>
+        <label class="choice"><input type="radio" name="q9" value="B"><span class="letter">B.</span><span class="choice-text">11</span></label>
+        <label class="choice"><input type="radio" name="q9" value="C"><span class="letter">C.</span><span class="choice-text">12</span></label>
+        <label class="choice"><input type="radio" name="q9" value="D"><span class="letter">D.</span><span class="choice-text">17</span></label>
+      </div>
+      <button class="hint-button" type="button">Show hint</button><div class="hint">List numbers of the form 5k + 2 in increasing order, then test which one leaves remainder 1 when divided by 3.</div>
+      <div class="feedback"></div>
+    </section>
+
+    <section class="question" data-answer="C" data-explanation="There are 4 choices for the hundreds digit, 3 remaining choices for the tens digit, and 2 for the ones digit. Thus 4 × 3 × 2 = 24 numbers.">
+      <div class="q-top"><span class="q-number">QUESTION 10</span><span class="topic">Combinatorics</span></div>
+      <p class="prompt">How many different three-digit numbers can be formed using the digits 1, 2, 3, and 4 if no digit may be repeated?</p>
+      <div class="choices">
+        <label class="choice"><input type="radio" name="q10" value="A"><span class="letter">A.</span><span class="choice-text">12</span></label>
+        <label class="choice"><input type="radio" name="q10" value="B"><span class="letter">B.</span><span class="choice-text">18</span></label>
+        <label class="choice"><input type="radio" name="q10" value="C"><span class="letter">C.</span><span class="choice-text">24</span></label>
+        <label class="choice"><input type="radio" name="q10" value="D"><span class="letter">D.</span><span class="choice-text">64</span></label>
+      </div>
+      <button class="hint-button" type="button">Show hint</button><div class="hint">Count the choices for each position in order. Each time you use a digit, one fewer digit remains available.</div>
+      <div class="feedback"></div>
+    </section>
+
+    <div class="actions">
+      <button class="action primary" id="submit-btn" type="submit">Submit quiz</button>
+      <button class="action" id="reset-btn" type="button">Start over</button>
+    </div>
+  </form>
+
+  <section id="results" aria-live="polite">
+    <h2>Your results</h2>
+    <div class="score" id="score"></div>
+    <p id="result-message"></p>
+    <p class="result-note">Correct answers and explanations are shown under each question. You can review your work or start over.</p>
+    <button class="action primary" id="review-btn" type="button">Review answers</button>
+  </section>
+  <footer>AMC 8–style practice · Made for learning</footer>
+</main>
+<script>
+  const form = document.getElementById('quiz-form');
+  const questions = [...document.querySelectorAll('.question')];
+  const progressBar = document.getElementById('progress-bar');
+  const answeredCount = document.getElementById('answered-count');
+  const progressPercent = document.getElementById('progress-percent');
+  const results = document.getElementById('results');
+  let submitted = false;
+
+  function updateProgress() {
+    const answered = questions.filter(q => q.querySelector('input:checked')).length;
+    answeredCount.textContent = `${answered} of ${questions.length} answered`;
+    const percent = Math.round(answered / questions.length * 100);
+    progressPercent.textContent = `${percent}%`;
+    progressBar.style.width = `${percent}%`;
+  }
+
+  form.addEventListener('change', event => {
+    if (event.target.matches('input[type="radio"]') && !submitted) updateProgress();
+  });
+
+  document.querySelectorAll('.hint-button').forEach(button => {
+    button.addEventListener('click', () => {
+      const hint = button.nextElementSibling;
+      const showing = hint.classList.toggle('visible');
+      button.textContent = showing ? 'Hide hint' : 'Show hint';
+    });
+  });
+
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    if (submitted) return;
+    const unanswered = questions.filter(q => !q.querySelector('input:checked'));
+    if (unanswered.length) {
+      const proceed = confirm(`You have ${unanswered.length} unanswered question(s). Submit anyway?`);
+      if (!proceed) {
+        unanswered[0].scrollIntoView({behavior:'smooth', block:'center'});
+        return;
+      }
+    }
+    let score = 0;
+    questions.forEach((q, index) => {
+      const correct = q.dataset.answer;
+      const selected = q.querySelector('input:checked');
+      const feedback = q.querySelector('.feedback');
+      const choiceLabels = q.querySelectorAll('.choice');
+      choiceLabels.forEach(label => {
+        const input = label.querySelector('input');
+        input.disabled = true;
+        if (input.value === correct) label.style.borderColor = 'var(--correct)';
+        if (selected && input === selected && input.value !== correct) label.style.borderColor = 'var(--wrong)';
+      });
+      feedback.classList.add('visible');
+      if (selected && selected.value === correct) {
+        score++;
+        feedback.classList.add('correct');
+        feedback.innerHTML = `<strong style="color:var(--correct)">Correct.</strong> ${q.dataset.explanation}`;
+      } else {
+        feedback.classList.add('incorrect');
+        feedback.innerHTML = `<strong style="color:var(--wrong)">${selected ? 'Not quite.' : 'Unanswered.'}</strong> Correct answer: ${correct}. ${q.dataset.explanation}`;
+      }
+    });
+    submitted = true;
+    document.getElementById('score').textContent = `${score} / ${questions.length}`;
+    const message = score === 10 ? 'Excellent work! You got every question right.' :
+                    score >= 8 ? 'Great job! You have a strong grasp of these topics.' :
+                    score >= 6 ? 'Good effort! Review the explanations to sharpen your skills.' :
+                    'Keep practicing. Review the solutions, then try the quiz again.';
+    document.getElementById('result-message').textContent = message;
+    results.style.display = 'block';
+    document.getElementById('submit-btn').disabled = true;
+    results.scrollIntoView({behavior:'smooth', block:'start'});
+  });
+
+  document.getElementById('reset-btn').addEventListener('click', () => {
+    form.reset();
+    submitted = false;
+    questions.forEach(q => {
+      q.querySelectorAll('input').forEach(input => input.disabled = false);
+      q.querySelectorAll('.choice').forEach(label => label.style.borderColor = '');
+      const feedback = q.querySelector('.feedback');
+      feedback.className = 'feedback';
+      feedback.textContent = '';
+      const hint = q.querySelector('.hint');
+      hint.classList.remove('visible');
+      q.querySelector('.hint-button').textContent = 'Show hint';
+    });
+    results.style.display = 'none';
+    document.getElementById('submit-btn').disabled = false;
+    updateProgress();
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+
+  document.getElementById('review-btn').addEventListener('click', () => {
+    questions[0].scrollIntoView({behavior:'smooth', block:'start'});
+  });
+
+  updateProgress();
+</script>
+</body>
+</html>
